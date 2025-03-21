@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase/firebase';
-import { signInWithGoogle, signOut } from '@/lib/firebase/authUtils';
+import { signInWithEmail, signOut } from '@/lib/firebase/authUtils';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -21,7 +21,7 @@ export function useAuth() {
   return {
     user,
     loading,
-    signInWithGoogle,
+    signInWithEmail,
     signOut
   };
 }
