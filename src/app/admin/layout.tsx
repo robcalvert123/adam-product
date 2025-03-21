@@ -4,14 +4,13 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { logout } from '@/lib/firebase/authUtils';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const isLoginPage = pathname === '/admin/login';
@@ -21,15 +20,6 @@ export default function AdminLayout({
       router.push('/admin/login');
     }
   }, [user, loading, router, isLoginPage]);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/admin/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
 
   // Don't show the admin layout for the login page
   if (isLoginPage) {
@@ -70,7 +60,7 @@ export default function AdminLayout({
                 View Public Site
               </button>
               <button
-                onClick={handleLogout}
+                onClick={() => signOut()}
                 className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
               >
                 Logout
