@@ -1,21 +1,22 @@
+import { GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth } from './firebase';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
-export const login = async (email: string, password: string) => {
+export const signInWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
+    const result = await signInWithPopup(auth, provider);
+    return result.user;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error signing in with Google:', error);
     throw error;
   }
 };
 
-export const logout = async () => {
+export const signOut = async () => {
   try {
-    await signOut(auth);
+    await firebaseSignOut(auth);
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error('Error signing out:', error);
     throw error;
   }
 }; 
