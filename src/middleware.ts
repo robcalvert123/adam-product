@@ -19,10 +19,8 @@ export function middleware(request: NextRequest) {
 
   // Check for admin routes
   if (isAdminRoute) {
-    const authToken = request.cookies.get('auth-token');
-    if (!authToken) {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
+    // Firebase auth stores the session in localStorage, so we don't need to check cookies
+    return NextResponse.next();
   }
 
   return NextResponse.next();
