@@ -67,9 +67,16 @@ export default function AdminActivities() {
                     </div>
                   </div>
                   <div className="ml-4 flex-shrink-0">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                      {activity.category}
-                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {(activity.tags || []).map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

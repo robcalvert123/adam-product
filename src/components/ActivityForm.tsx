@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { createActivity } from '@/lib/firebase/activityUtils';
+import { useState, useEffect } from 'react';
+import { createActivity, getAllTags, addNewTag } from '@/lib/firebase/activityUtils';
 import { Activity } from '@/lib/types/activity';
 
 export default function ActivityForm() {
@@ -13,9 +13,22 @@ export default function ActivityForm() {
     price: 0,
     date: '',
     time: '',
-    category: '',
+    tags: [] as string[],
     imageUrl: '',
   });
+
+  const [newTag, setNewTag] = useState('');
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      const tags = await getAllTags();
+      setAvailableTags(tags);
+    };
+    fetchTags();
+  }, []);
 
   const extractImageUrl = (url: string): string => {
     try {
@@ -31,6 +44,58 @@ export default function ActivityForm() {
       console.error('Error extracting image URL:', error);
       return url;
     }
+  };
+
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewTag(value);
+    
+    if (value.trim()) {
+      const filtered = availableTags.filter(tag => 
+        tag.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleTagKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const trimmedTag = newTag.trim();
+      if (trimmedTag && !formData.tags.includes(trimmedTag)) {
+        await handleAddTag(trimmedTag);
+      }
+    }
+  };
+
+  const handleAddTag = async (tag: string) => {
+    const trimmedTag = tag.trim();
+    if (trimmedTag && !formData.tags.includes(trimmedTag)) {
+      // If it's a new tag, add it to the available tags
+      if (!availableTags.includes(trimmedTag)) {
+        await addNewTag(trimmedTag);
+        setAvailableTags(prev => [...prev, trimmedTag]);
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, trimmedTag]
+      }));
+      setNewTag('');
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,9 +114,12 @@ export default function ActivityForm() {
         price: 0,
         date: '',
         time: '',
-        category: '',
+        tags: [],
         imageUrl: '',
       });
+      setNewTag('');
+      setSuggestions([]);
+      setShowSuggestions(false);
       alert('Activity created successfully!');
     } catch (error) {
       console.error('Error creating activity:', error);
@@ -188,23 +256,61 @@ export default function ActivityForm() {
       </div>
 
       <div>
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-        <select
-          id="category"
-          name="category"
-          value={formData.category}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-        >
-          <option value="">Select a category</option>
-          <option value="sports">Sports</option>
-          <option value="arts">Arts & Crafts</option>
-          <option value="music">Music</option>
-          <option value="education">Education</option>
-          <option value="outdoor">Outdoor</option>
-          <option value="other">Other</option>
-        </select>
+        <label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags</label>
+        <div className="mt-1 relative">
+          <div className="flex flex-wrap gap-2 mb-2">
+            {formData.tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="ml-1 text-indigo-600 hover:text-indigo-800"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className="relative">
+            <input
+              type="text"
+              id="tags"
+              value={newTag}
+              onChange={handleTagInputChange}
+              onKeyDown={handleTagKeyDown}
+              onFocus={() => setShowSuggestions(true)}
+              placeholder="Type to search or create a new tag"
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+            {showSuggestions && (
+              <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto">
+                <ul className="py-1 text-base">
+                  {suggestions.length > 0 ? (
+                    suggestions.map((tag) => (
+                      <li
+                        key={tag}
+                        className="px-4 py-2 hover:bg-indigo-50 cursor-pointer"
+                        onClick={() => handleAddTag(tag)}
+                      >
+                        {tag}
+                      </li>
+                    ))
+                  ) : (
+                    <li
+                      className="px-4 py-2 text-gray-500 italic"
+                    >
+                      Press Enter to create "{newTag.trim()}"
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <div>

@@ -98,9 +98,16 @@ export default function ActivityList() {
               </div>
             </div>
             <div className="mt-4">
-              <span className="inline-block bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                {activity.category}
-              </span>
+              <div className="flex flex-wrap gap-2">
+                {(activity.tags || []).map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-block bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>

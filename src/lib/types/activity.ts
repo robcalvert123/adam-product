@@ -10,7 +10,7 @@ export interface Activity {
   price: number;
   date: string;
   time: string;
-  category: string;
+  tags: string[];
   imageUrl?: string;
   createdAt: string;
   createdBy: string;
